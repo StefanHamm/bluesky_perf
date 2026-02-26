@@ -28,6 +28,46 @@ sim = None
 scr = None
 server = None
 
+def reload_submodules():
+    """
+    Reload all submodules dynamically except for excluded ones.
+    If 'bluesky.stack' is present, reload it first.
+    """
+    import sys
+    import importlib
+
+    # A tuple is slightly faster for iteration than a set here
+    excluded_modules = (
+        'bluesky.resources',
+        'bluesky.pathfinder',
+        'bluesky.plugins',
+        'bluesky.settings'
+    )
+
+    # 1. Filter dynamically using a list comprehension and any()
+    modules_to_reload = [
+        name for name, mod in list(sys.modules.items())
+        if mod is not None
+        and (name.startswith('bluesky.'))
+        and not any(name == exc or name.startswith(f"{exc}.") for exc in excluded_modules)
+    ]
+
+    # 2. Sort to push 'bluesky.stack' to the front
+    # In Python, False evaluates to 0 and True evaluates to 1.
+    # So, (name != 'bluesky.stack') is 0 for the stack module, placing it first.
+    # Needed so submodules can register correctly!!!
+    modules_to_reload.sort(key=lambda name: name != 'bluesky.stack')
+
+    #print(modules_to_reload)
+    # 3. Execute the reloads
+    for name in modules_to_reload:
+        try:
+            importlib.reload(sys.modules[name])
+            #print(f"Successfully reloaded: {name}")
+        except Exception as e:
+            print(f"Failed to reload {name}: {e}")
+
+
 
 def init(mode='sim', configfile=None, scenfile=None, discoverable=False,
          gui=None, detached=False, workdir=None, group_id=None, **kwargs):
@@ -73,7 +113,8 @@ def init(mode='sim', configfile=None, scenfile=None, discoverable=False,
     # Initialize global settings, possibly loading a custom config file
     from bluesky import settings
     settings.init(configfile)
-
+    reload_submodules()
+    
     from bluesky import stack, tools
 
     # Initialise tools
