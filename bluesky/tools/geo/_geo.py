@@ -14,6 +14,7 @@ decl_read = False
 decl_lat_lon = np.array([])
 
 
+@numba.njit(cache=True)
 def rwgs84(latd):
     """ Calculate the earths radius with WGS'84 geoid definition
         In:  lat [deg] (latitude)
@@ -36,6 +37,7 @@ def rwgs84(latd):
 #------------------------------------------------------------
 
 
+@numba.njit(cache=True)
 def rwgs84_matrix(latd):
     """ Calculate the earths radius with WGS'84 geoid definition
         In:  lat [deg] (Vector of latitudes)
@@ -60,6 +62,8 @@ def rwgs84_matrix(latd):
 
     return r
 
+
+@numba.njit(cache=True)
 def qdrdist(latd1, lond1, latd2, lond2):
     """ Calculate bearing and distance, using WGS'84
         In:
@@ -117,6 +121,8 @@ def qdrdist(latd1, lond1, latd2, lond2):
     return qdr, d/nm
 
 
+
+@numba.njit(cache=True)
 def qdrdist_matrix(lat1, lon1, lat2, lon2):
     """ Calculate bearing and distance vectors, using WGS'84
         In:
@@ -172,6 +178,8 @@ def qdrdist_matrix(lat1, lon1, lat2, lon2):
     return qdr, dist
 
 
+
+@numba.njit(cache=True)
 def latlondist(latd1, lond1, latd2, lond2):
     """ Calculates only distance using haversine notation of the same formulae and average r from wgs'84
         Input:
@@ -218,6 +226,8 @@ def latlondist(latd1, lond1, latd2, lond2):
     return d
 
 
+
+@numba.njit(cache=True)
 def latlondist_matrix(lat1, lon1, lat2, lon2):
     """ Calculates distance using haversine formulae and avaerage r from wgs'84
         Input:
@@ -258,6 +268,8 @@ def latlondist_matrix(lat1, lon1, lat2, lon2):
     return dist
 
 
+
+@numba.njit(cache=True)
 def wgsg(latd):
     """ Gravity acceleration at a given latitude according to WGS'84 """
     geq = 9.7803   # m/s2 g at equator
@@ -270,6 +282,8 @@ def wgsg(latd):
     return g
 
 
+
+@numba.njit(cache=True)
 def qdrpos(latd1, lond1, qdr, dist):
     """ Calculate vector with positions from vectors of reference position,
         bearing and distance.
@@ -295,6 +309,8 @@ def qdrpos(latd1, lond1, qdr, dist):
     return np.degrees(lat2), np.degrees(lon2)
 
 
+
+@numba.njit(cache=True)
 def kwikdist(lata, lona, latb, lonb):
     """
     Quick and dirty dist [nm]
@@ -315,6 +331,8 @@ def kwikdist(lata, lona, latb, lonb):
     return dist
 
 
+
+@numba.njit(cache=True)
 def kwikdist_matrix(lata, lona, latb, lonb):
     """
     Quick and dirty dist [nm]
@@ -337,6 +355,8 @@ def kwikdist_matrix(lata, lona, latb, lonb):
     return dist
 
 
+
+@numba.njit(cache=True)
 def kwikqdrdist(lata, lona, latb, lonb):
     """Gives quick and dirty qdr[deg] and dist [nm]
        from lat/lon. (note: does not work well close to poles)"""
@@ -354,6 +374,8 @@ def kwikqdrdist(lata, lona, latb, lonb):
     return qdr, dist
 
 
+
+@numba.njit(cache=True)
 def kwikqdrdist_matrix(lata, lona, latb, lonb):
     """Gives quick and dirty qdr[deg] and dist [nm] matrices
        from lat/lon vectors. (note: does not work well close to poles)"""
@@ -372,6 +394,8 @@ def kwikqdrdist_matrix(lata, lona, latb, lonb):
 
     return qdr, dist
 
+
+@numba.njit(cache=True)
 def kwikpos(latd1, lond1, qdr, dist):
     """ Fast, but quick and dirty, position calculation from vectors of reference position,
         bearing and distance using flat earth approximation

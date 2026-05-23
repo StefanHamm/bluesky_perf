@@ -6,6 +6,8 @@ import numba
 from bluesky import settings
 import numba
 
+
+
 settings.set_variable_defaults(casmach_threshold=2.0)
 # International standard atmpshere only up to 72000 ft / 22 km
 
@@ -82,7 +84,7 @@ def casmachthr(threshold:float=None):
 # ------------------------------------------------------------------------------
 # Vectorized aero functions
 # ------------------------------------------------------------------------------
-@numba.njit
+@numba.njit(cache=True)
 def vatmos(h):
     """ Calculate atmospheric pressure, density, and temperature for a given altitude.
 
@@ -107,7 +109,7 @@ def vatmos(h):
 
     return p, rho, T
 
-@numba.njit
+@numba.njit(cache=True)
 def vtemp(h):
     """ Calculate atmospheric temperature for a given altitude.
 
@@ -122,7 +124,7 @@ def vtemp(h):
 
 
 # Atmos wrappings:
-@numba.njit
+@numba.njit(cache=True)
 def vpressure(h):
     """ Calculate atmospheric pressure for a given altitude.
 
@@ -135,7 +137,7 @@ def vpressure(h):
     p, _, _ = vatmos(h)
     return p
 
-@numba.njit
+@numba.njit(cache=True)
 def vdensity(h):
     """ Calculate atmospheric density for a given altitude.
 
@@ -148,7 +150,7 @@ def vdensity(h):
     _, r, _ = vatmos(h)
     return r
 
-@numba.njit
+@numba.njit(cache=True)
 def vvsound(h):
     """ Calculate the speed of sound for a given altitude.
 
@@ -164,7 +166,7 @@ def vvsound(h):
 
 
 # ---------Speed conversions---h in [m]------------------
-@numba.njit
+@numba.njit(cache=True)
 def vtas2mach(tas, h):
     """ True airspeed (tas) to mach number conversion for numpy arrays.
 
@@ -179,7 +181,7 @@ def vtas2mach(tas, h):
     mach = tas / a
     return mach
 
-@numba.njit
+@numba.njit(cache=True)
 def vmach2tas(mach, h):
     """ Mach number to True airspeed (tas) conversion for numpy arrays.
 
@@ -194,7 +196,7 @@ def vmach2tas(mach, h):
     tas = mach * a
     return tas
 
-@numba.njit
+@numba.njit(cache=True)
 def veas2tas(eas, h):
     """ Equivalent airspeed to true airspeed conversion for numpy arrays.
 
@@ -209,7 +211,7 @@ def veas2tas(eas, h):
     tas = eas * np.sqrt(rho0 / rho)
     return tas
 
-@numba.njit
+@numba.njit(cache=True)
 def vtas2eas(tas, h):
     """ True airspeed to equivalent airspeed conversion for numpy arrays.
 
@@ -224,7 +226,7 @@ def vtas2eas(tas, h):
     eas = tas * np.sqrt(rho / rho0)
     return eas
 
-@numba.njit
+@numba.njit(cache=True)
 def vcas2tas(cas, h):
     """ Calibrated to true airspeed conversion for numpy arrays.
 
@@ -243,7 +245,7 @@ def vcas2tas(cas, h):
     tas = np.where(cas < 0, -1 * tas, tas)
     return tas
 
-@numba.njit
+@numba.njit(cache=True)
 def vtas2cas(tas, h):
     """ True to calibrated airspeed conversion for numpy arrays.
 
@@ -262,7 +264,7 @@ def vtas2cas(tas, h):
     cas = np.where(tas<0, -1*cas, cas)
     return cas
 
-@numba.njit
+@numba.njit(cache=True)
 def vmach2cas(mach, h):
     """ Mach to calibrated airspeed conversion for numpy arrays.
 
@@ -277,7 +279,7 @@ def vmach2cas(mach, h):
     cas = vtas2cas(tas, h)
     return cas
 
-@numba.njit
+@numba.njit(cache=True)
 def vcas2mach(cas, h):
     """ Calibrated airspeed to Mach conversion for numpy arrays.
 
@@ -292,7 +294,7 @@ def vcas2mach(cas, h):
     M   = vtas2mach(tas, h)
     return M
 
-@numba.njit
+@numba.njit(cache=True)
 def vcasormach(spd, h):
     """ Interpret input speed as either CAS or a Mach number, and return TAS, CAS, and Mach.
 
@@ -312,7 +314,7 @@ def vcasormach(spd, h):
     mach   = np.where(ismach, spd, vtas2mach(tas, h))
     return tas, cas, mach
 
-@numba.njit
+@numba.njit(cache=True)
 def vcasormach2tas(spd, h):
     """ Interpret input speed as either CAS or a Mach number, and return TAS.
 
@@ -327,7 +329,7 @@ def vcasormach2tas(spd, h):
     ismach = np.logical_and(spd > 0.1, spd < casmach_thr)
     return np.where(ismach, vmach2tas(spd, h), vcas2tas(spd, h))
 
-@numba.njit
+@numba.njit(cache=True)
 def crossoveralt(cas, mach):
     """ Calculate crossover altitude for given CAS and Mach number.
 
@@ -355,7 +357,7 @@ def crossoveralt(cas, mach):
 # ------------------------------------------------------------------------------
 # Scalar aero functions
 # ------------------------------------------------------------------------------
-@numba.njit
+@numba.njit(cache=True)
 def atmos(h):
     """ atmos(altitude): International Standard Atmosphere calculator
 
@@ -419,7 +421,7 @@ def atmos(h):
 
     return p, rho, T
 
-@numba.njit
+@numba.njit(cache=True)
 def temp(h):
     """ temp (altitude): Temperature only version of ISA atmos
 
@@ -472,17 +474,17 @@ def temp(h):
 
 
 # Atmos wrappings:
-@numba.njit
+@numba.njit(cache=True)
 def pressure(h):          # h [m]
     p, r, T = atmos(h)
     return p
 
-@numba.njit
+@numba.njit(cache=True)
 def density(h):   # air density at given altitude h [m]
     p, r, T = atmos(h)
     return r
 
-@numba.njit
+@numba.njit(cache=True)
 def vsound(h):  # Speed of sound for given altitude h [m]
     T = temp(h)
     a = sqrt(gamma*R*T)
@@ -490,35 +492,35 @@ def vsound(h):  # Speed of sound for given altitude h [m]
 
 
 # ---------Speed conversions---h in [m]------------------
-@numba.njit
+@numba.njit(cache=True)
 def tas2mach(tas, h):
     """ True airspeed (tas) to mach number conversion """
     a = vsound(h)
     M = tas / a
     return M
 
-@numba.njit
+@numba.njit(cache=True)
 def mach2tas(M, h):
     """ True airspeed (tas) to mach number conversion """
     a = vsound(h)
     tas = M * a
     return tas
 
-@numba.njit
+@numba.njit(cache=True)
 def eas2tas(eas, h):
     """ Equivalent airspeed to true airspeed """
     rho = density(h)
     tas = eas * sqrt(rho0 / rho)
     return tas
 
-@numba.njit
+@numba.njit(cache=True)
 def tas2eas(tas, h):
     """ True airspeed to equivent airspeed """
     rho = density(h)
     eas = tas * sqrt(rho / rho0)
     return eas
 
-@numba.njit
+@numba.njit(cache=True)
 def cas2tas(cas, h):
     """ cas2tas conversion both m/s h in m """
     p, rho, T = atmos(h)
@@ -527,7 +529,7 @@ def cas2tas(cas, h):
     tas = -1 * tas if cas < 0 else tas
     return tas
 
-@numba.njit
+@numba.njit(cache=True)
 def tas2cas(tas, h):
     """ tas2cas conversion both m/s """
     p, rho, T = atmos(h)
@@ -536,21 +538,21 @@ def tas2cas(tas, h):
     cas = -1 * cas if tas < 0 else cas
     return cas
 
-@numba.njit
+@numba.njit(cache=True)
 def mach2cas(M, h):
     """ Mach to CAS conversion """
     tas = mach2tas(M, h)
     cas = tas2cas(tas, h)
     return cas
 
-@numba.njit
+@numba.njit(cache=True)
 def cas2mach(cas, h):
     """ CAS Mach conversion """
     tas = cas2tas(cas, h)
     M   = tas2mach(tas, h)
     return M
 
-@numba.njit
+@numba.njit(cache=True)
 def casormach(spd,h):
     if 0.1 < spd < casmach_thr:
         # Interpret spd as Mach number
@@ -564,7 +566,7 @@ def casormach(spd,h):
         m   = cas2mach(spd, h)
     return tas, cas, m
 
-@numba.njit
+@numba.njit(cache=True)
 def casormach2tas(spd,h):
     if 0.1 < spd < casmach_thr:
         # Interpret spd as Mach number
